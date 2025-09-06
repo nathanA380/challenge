@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jeu de Défis</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&display=swap');
+
+* { margin:0; padding:0; box-sizing:border-box; font-family: 'Quicksand', sans-serif;}
+body { 
+  background: linear-gradient(135deg, #ff6a88, #ff99ac); 
+  display:flex; flex-direction:column; align-items:center; min-height:100vh; padding:20px;
+  color:#fff;
+}
+
+h1 { text-align:center; margin-bottom:20px; font-size:2rem; text-shadow: 2px 2px 5px rgba(0,0,0,0.3);}
+.section {
+  background: rgba(255,255,255,0.2); backdrop-filter: blur(15px); padding:20px; border-radius:25px;
+  width:100%; max-width:400px; margin-bottom:20px; box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+  animation: fadeIn 0.8s ease;
+}
+input, button { padding:12px; margin:5px 0; border-radius:15px; border:none; font-size:1rem;}
+input { width: calc(100% - 24px);}
+button { width: 100%; background: #ff477e; color:#fff; cursor:pointer; font-weight:bold; transition:0.3s; }
+button:hover { background:#ff1e5d; transform: scale(1.05);}
+ul { list-style:none; margin-top:10px;}
+li { padding:5px 0; display:flex; justify-content:space-between; align-items:center; font-weight:bold; }
+
+.defi { margin-bottom:15px; font-size:1.1rem; text-align:center; font-weight:bold; color:#fff;
+       animation: bounce 0.5s;}
+.result { margin-top:15px; font-size:1.2rem; text-align:center; font-weight:bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.5);}
+
+@keyframes fadeIn {
+  0% {opacity:0; transform: translateY(-20px);}
+  100% {opacity:1; transform: translateY(0);}
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0);}
+  50% { transform: translateY(-10px);}
+}
+</style>
+</head>
+<body>
+
+<h1>🎯 Jeu de Défis 🎯</h1>
+
+<div class="section" id="players-section">
+  <h2>Ajouter les joueurs</h2>
+  <input type="text" id="playerName" placeholder="Nom du joueur">
+  <button onclick="addPlayer()">Ajouter</button>
+  <ul id="playersList"></ul>
+</div>
+
+<div class="section" id="challenge-section" style="display:none;">
+  <h2>Défi !</h2>
+  <div class="defi" id="currentChallenge"></div>
+  <button onclick="validateChallenge(true)">Validé ✅</button>
+  <button onclick="validateChallenge(false)">Pas validé ❌</button>
+</div>
+
+<div class="section" id="stop-section" style="display:none;">
+  <button onclick="stopGame()">Arrêter le jeu 🛑</button>
+</div>
+
+<div class="result" id="result"></div>
+
+<script>
+let players = [];
+let currentIndex = 0;
+let challenges = [
+  "Faire 10 pompes",
+  "Dire l'alphabet à l'envers",
+  "Faire un cri de lion",
+  "Tourner sur soi-même 5 fois",
+  "Imiter une célébrité",
+  "Danser sur une chanson au hasard",
+  "Faire un dessin en 30 secondes",
+  "Raconter une blague",
+  "Tenir une pose ridicule pendant 10s"
+];
+let scores = {};
+
+function addPlayer() {
+  const nameInput = document.getElementById('playerName');
+  const name = nameInput.value.trim();
+  if(name && !players.includes(name)) {
+    players.push(name);
+    scores[name] = 0;
+    const li = document.createElement('li');
+    li.textContent = name + " : 0";
+    li.id = "score-" + name;
+    document.getElementById('playersList').appendChild(li);
+    nameInput.value = "";
+  }
+  if(players.length > 0) {
+    document.getElementById('challenge-section').style.display = 'block';
+    document.getElementById('stop-section').style.display = 'block';
+    nextChallenge();
+  }
+}
+
+function nextChallenge() {
+  if(players.length === 0) return;
+  const player = players[currentIndex];
+  const challenge = challenges[Math.floor(Math.random() * challenges.length)];
+  const challengeDiv = document.getElementById('currentChallenge');
+  challengeDiv.textContent = player + " doit : " + challenge;
+  challengeDiv.classList.remove("bounce");
+  void challengeDiv.offsetWidth; // restart animation
+  challengeDiv.classList.add("bounce");
+}
+
+function validateChallenge(valid) {
+  const player = players[currentIndex];
+  if(valid) scores[player]++;
+  document.getElementById('score-' + player).textContent = player + " : " + scores[player];
+  currentIndex = (currentIndex + 1) % players.length;
+  nextChallenge();
+}
+
+function stopGame() {
+  let maxScore = -1;
+  let winners = [];
+  for(const player in scores) {
+    if(scores[player] > maxScore) {
+      maxScore = scores[player];
+      winners = [player];
+    } else if(scores[player] === maxScore) {
+      winners.push(player);
+    }
+  }
+  document.getElementById('result').textContent = "🎉 Gagnant(s) : " + winners.join(", ") + " avec " + maxScore + " points !";
+}
+</script>
+
+</body>
+</html>
